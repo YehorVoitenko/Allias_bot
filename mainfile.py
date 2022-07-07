@@ -5,7 +5,7 @@ bot = telebot.TeleBot(config.TOKEN)
 
 @bot.message_handler(commands = ['start'])
 def give_frog(message):
-    sti = open(r'E:\FirstTeleBot\Allias_bot\frog.webp', 'rb')
+    sti = open(r'E:\FirstTeleBot\Allias_bot\photos\frog.webp', 'rb')
     bot.send_sticker(message.chat.id, sti)
     bot.send_message(message.chat.id, "Чел, дарова блин, {0.first_name}! это я {1.first_name}. "
                                      "Это так, просто учусь пока, ничё интересного". format(message.from_user, bot.get_me()),
