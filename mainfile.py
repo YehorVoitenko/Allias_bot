@@ -1,6 +1,8 @@
-import telebot
-from telebot import types
 
+import telebot
+import random
+from telebot import types
+import text_redactor
 bot = telebot.TeleBot("5455678554:AAEqS1e20yR09YkRSC5GDtxvwFD37Gjd0_8")
 
 
@@ -17,14 +19,20 @@ def user_answer(message):
         msg1 = bot.send_message(message.chat.id, "Введите название")
         bot.register_next_step_handler(msg1, user_put_name)
     elif message.text == 'Случайное название':
-        bot.send_message(message.chat.id, "Вы выбрали случайное название")
+        with open('names.txt', 'r') as file:
+            content = file.read()
+            splited = content.split(", ")
+            random_name = random.choice(splited)
+            bot.send_message(message.chat.id, f"Название первой команды: {random_name}")
 
 
 def user_put_name(message):
     team_name = message.text
-    bot.send_message(message.chat.id, f'Your name {team_name}')
+    bot.send_message(message.chat.id, f'Название первой команды: {team_name}')
+
 
 
 
 bot.polling(non_stop=True)
+
 
