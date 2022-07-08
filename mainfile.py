@@ -41,7 +41,7 @@ def get_text(message):
     if message.text == 'первый ID':
         bot.send_message(message.chat.id, f'Yours id: {message.from_user.id}')
     elif message.text == 'Имя':
-        bot.send_message(message.chat.id, f'Yours name: {message.from_user.first_name}')
+        bot.send_message(message.chat.id, f'Yours names: {message.from_user.first_name}')
 
 
 
