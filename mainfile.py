@@ -1,8 +1,8 @@
-
 import telebot
 import random
 from telebot import types
 import text_redactor
+
 bot = telebot.TeleBot("5455678554:AAEqS1e20yR09YkRSC5GDtxvwFD37Gjd0_8")
 
 
@@ -14,33 +14,30 @@ def greeting(message):
     bot.register_next_step_handler(msg, user_answer)
 
 
-@bot.message_handler(content_types=['text'])
 def user_answer(message):
     if message.text == 'Своё название':
         msg1 = bot.send_message(message.chat.id, "Введите название")
-        bot.register_next_step_handler(msg1, user_put_name)
-        types.ReplyKeyboardRemove()
+        bot.register_next_step_handler(msg1, are_you_ready_own)
     elif message.text == 'Случайное название':
         with open('names.txt', 'r') as file:
             content = file.read()
             splited = content.split(", ")
             random_name = random.choice(splited)
-        bot.send_message(message.chat.id, f"Название первой команды: {random_name}")
+        msg2 = bot.send_message(message.chat.id, f"Название первой команды: <b><u>{random_name}</u></b>", parse_mode='html')
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         start = types.InlineKeyboardButton('Готов')
         markup.add(start)
-        mas = bot.send_message(message.chat.id, f"Команда {random_name} готова начать? Нажми на кнопку, если готов!", reply_markup=markup)
+        bot.send_message(message.chat.id, f"Команда <b><u>{random_name}</u></b> готова начать? Нажми на кнопку, если готов!",
+                         reply_markup=markup, parse_mode='html')
 
 
-def user_put_name(message):
+def are_you_ready_own(message):
     team_name = message.text
-    bot.send_message(message.chat.id, f'Название первой команды: {team_name}')
-
-def for_vlad(message):
-    bot.send_message(message.chat.id, 'Влад красавчик')
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    start = types.InlineKeyboardButton('Готов')
+    markup.add(start)
+    bot.send_message(message.chat.id, f"Команда <b>{team_name}</b> готова начать? Нажми на кнопку, если готов!", reply_markup=markup, parse_mode='html')
 
 
 
 bot.polling(non_stop=True)
-
-
