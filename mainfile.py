@@ -49,6 +49,12 @@ def are_you_ready_own(message):
 
 
 def show_word(message):
-    bot.send_message(message.chat.id, 'Game over')
+    with open('words.txt', 'r') as file:  # Instead of copying funcs - use class or another file; decorators
+        content = file.read()
+        splited = content.split(", ")
+        word = random.choice(splited)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(types.InlineKeyboardButton('+'), types.InlineKeyboardButton('-'))
+    bot.send_message(message.chat.id, word, reply_markup=markup)
 
 bot.polling(non_stop=True)
