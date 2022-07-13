@@ -1,9 +1,10 @@
 import telebot
 import random
 from telebot import types
-import text_redactor
 
 bot = telebot.TeleBot("5455678554:AAEqS1e20yR09YkRSC5GDtxvwFD37Gjd0_8")
+global team_number
+team_number = 1
 
 
 @bot.message_handler(commands=['start'])
@@ -19,25 +20,35 @@ def user_answer(message):
         msg1 = bot.send_message(message.chat.id, "Введите название")
         bot.register_next_step_handler(msg1, are_you_ready_own)
     elif message.text == 'Случайное название':
-        with open('names.txt', 'r') as file:
+        with open('first name.txt', 'r') as file:
             content = file.read()
             splited = content.split(", ")
-            random_name = random.choice(splited)
-        msg2 = bot.send_message(message.chat.id, f"Название первой команды: <b><u>{random_name}</u></b>", parse_mode='html')
+            random_fir_name = random.choice(splited)
+        with open('words.txt', 'r') as file:
+            content = file.read()
+            splited = content.split(", ")
+            random_sec_name = random.choice(splited)
+        bot.send_message(message.chat.id, f"Название 1-ой команды: <b><u>{random_fir_name}  {random_sec_name}</u></b>", parse_mode='html')
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         start = types.InlineKeyboardButton('Готов')
         markup.add(start)
-        bot.send_message(message.chat.id, f"Команда <b><u>{random_name}</u></b> готова начать? Нажми на кнопку, если готов!",
-                         reply_markup=markup, parse_mode='html')
+        msg = bot.send_message(message.chat.id, f" 1-ая команда <b><u>{random_fir_name}  {random_sec_name}</u></b> "
+                                                f"готова начать? '\n' Нажми на кнопку, если готов!",
+                               reply_markup=markup, parse_mode='html')
+        bot.register_next_step_handler(msg, show_word)
 
 
 def are_you_ready_own(message):
-    team_name = message.text
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    start = types.InlineKeyboardButton('Готов')
-    markup.add(start)
-    bot.send_message(message.chat.id, f"Команда <b>{team_name}</b> готова начать? Нажми на кнопку, если готов!", reply_markup=markup, parse_mode='html')
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        start = types.InlineKeyboardButton('Готов')
+        markup.add(start)
+        msg = bot.send_message(message.chat.id, f"1-ая команда <b><u>{message.text}</u></b> "
+                                                f"готова начать? '\n'Нажми на кнопку, если готов!", reply_markup=markup,
+                               parse_mode='html')
+        bot.register_next_step_handler(msg, show_word)
 
 
+def show_word(message):
+    bot.send_message(message.chat.id, 'Game over')
 
 bot.polling(non_stop=True)
