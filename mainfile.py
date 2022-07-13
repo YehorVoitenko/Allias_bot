@@ -20,11 +20,11 @@ def user_answer(message):
         msg1 = bot.send_message(message.chat.id, "Введите название")
         bot.register_next_step_handler(msg1, are_you_ready_own)
     elif message.text == 'Случайное название':
-        with open('first name.txt', 'r') as file:
+        with open('first name.txt', 'r') as file:  # Instead of copying funcs - use class or another file; decorators
             content = file.read()
             splited = content.split(", ")
             random_fir_name = random.choice(splited)
-        with open('second name.txt', 'r') as file:
+        with open('second name.txt', 'r') as file:  # Instead of second name.txt - use file with adjectives
             content = file.read()
             splited = content.split(", ")
             random_sec_name = random.choice(splited)
@@ -32,7 +32,7 @@ def user_answer(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         start = types.InlineKeyboardButton('Готов')
         markup.add(start)
-        msg = bot.send_message(message.chat.id, f" 1-ая команда <b><u>{random_fir_name}  {random_sec_name}</u></b> "
+        msg = bot.send_message(message.chat.id, f" 1-ая команда <b><u>{random_fir_name}  {random_sec_name}</u></b> "  # Create another def for print this phrace func
                                                 f"готова начать? '\n' Нажми на кнопку, если готов!",
                                reply_markup=markup, parse_mode='html')
         bot.register_next_step_handler(msg, show_word)
@@ -43,7 +43,7 @@ def are_you_ready_own(message):
         start = types.InlineKeyboardButton('Готов')
         markup.add(start)
         msg = bot.send_message(message.chat.id, f"1-ая команда <b><u>{message.text}</u></b> "
-                                                f"готова начать? '\n'Нажми на кнопку, если готов!", reply_markup=markup,
+                                                f"готова начать? '\n'Нажми на кнопку, если готов!", reply_markup=markup, # Create another def for print this phrace func
                                parse_mode='html')
         bot.register_next_step_handler(msg, show_word)
 
