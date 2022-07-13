@@ -43,18 +43,28 @@ def are_you_ready_own(message):
         start = types.InlineKeyboardButton('Готов')
         markup.add(start)
         msg = bot.send_message(message.chat.id, f"1-ая команда <b><u>{message.text}</u></b> "
-                                                f"готова начать? '\n'Нажми на кнопку, если готов!", reply_markup=markup, # Create another def for print this phrace func
+                                                f"готова начать? '\n'Нажми на кнопку, если готов!", reply_markup=markup,
                                parse_mode='html')
-        bot.register_next_step_handler(msg, show_word)
+        bot.register_next_step_handler(msg, show_word)  # Create another def for print this phrace func + add intuction "if you guessed - put '+'"
 
 
 def show_word(message):
     with open('words.txt', 'r') as file:  # Instead of copying funcs - use class or another file; decorators
-        content = file.read()
-        splited = content.split(", ")
-        word = random.choice(splited)
+            content = file.read()
+            splited = content.split(", ")
+            word = random.choice(splited)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.InlineKeyboardButton('+'), types.InlineKeyboardButton('-'))
-    bot.send_message(message.chat.id, word, reply_markup=markup)
+    msg = bot.send_message(message.chat.id, f'<b>{word}</b>', reply_markup=markup, parse_mode='html')
+    bot .register_next_step_handler(msg, again)
+
+
+def again(message):
+    if message.text == '+':
+        bot.send_message(message.chat.id, '+1 балл')
+        show_word(message)
+    elif message.text == '-':
+        bot.send_message(message.chat.id, '-1 балл')
+        show_word(message)
 
 bot.polling(non_stop=True)
