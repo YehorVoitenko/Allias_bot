@@ -24,7 +24,7 @@ def user_answer(message):
             content = file.read()
             splited = content.split(", ")
             random_fir_name = random.choice(splited)
-        with open('words.txt', 'r') as file:
+        with open('second name.txt', 'r') as file:
             content = file.read()
             splited = content.split(", ")
             random_sec_name = random.choice(splited)
