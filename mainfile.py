@@ -2,7 +2,6 @@ import asyncio
 import time
 import telebot
 import random
-import schedule
 from telebot import types
 
 bot = telebot.TeleBot("5455678554:AAEqS1e20yR09YkRSC5GDtxvwFD37Gjd0_8")
