@@ -1,10 +1,12 @@
+import asyncio
+import time
+
 import telebot
 import random
+import schedule
 from telebot import types
 
 bot = telebot.TeleBot("5455678554:AAEqS1e20yR09YkRSC5GDtxvwFD37Gjd0_8")
-global team_number
-team_number = 1
 
 
 @bot.message_handler(commands=['start'])
@@ -35,8 +37,15 @@ def user_answer(message):
         msg = bot.send_message(message.chat.id, f" 1-ая команда <b><u>{random_fir_name}  {random_sec_name}</u></b> "  # Create another def for print this phrace func
                                                 f"готова начать? '\n' Нажми на кнопку, если готов!",
                                reply_markup=markup, parse_mode='html')
-        bot.register_next_step_handler(msg, show_word)
+        bot.register_next_step_handler(msg, timer)
 
+
+def are_you_ready(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    start = types.InlineKeyboardButton('Готов')
+    markup.add(start)
+    msg = bot.send_message(message.chat.id, f"Команда готова?", reply_markup=markup, parse_mode='html') # Create another def for print this phrace func
+    bot.register_next_step_handler(msg, timer)
 
 def are_you_ready_own(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -45,7 +54,8 @@ def are_you_ready_own(message):
         msg = bot.send_message(message.chat.id, f"1-ая команда <b><u>{message.text}</u></b> "
                                                 f"готова начать? '\n'Нажми на кнопку, если готов!", reply_markup=markup,
                                parse_mode='html')
-        bot.register_next_step_handler(msg, show_word)  # Create another def for print this phrace func + add intuction "if you guessed - put '+'"
+        bot.register_next_step_handler(msg, timer)  # Create another def for print this phrace func + add intuction "if you guessed - put '+'
+        print("запуск готов?")
 
 
 def show_word(message):
@@ -56,7 +66,7 @@ def show_word(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.InlineKeyboardButton('+'), types.InlineKeyboardButton('-'))
     msg = bot.send_message(message.chat.id, f'<b>{word}</b>', reply_markup=markup, parse_mode='html')
-    bot .register_next_step_handler(msg, again)
+    bot.register_next_step_handler(msg, again)
 
 
 def again(message):
@@ -67,4 +77,13 @@ def again(message):
         bot.send_message(message.chat.id, '-1 балл')
         show_word(message)
 
+
+def timer(message):
+    show_word(message)
+    time.sleep(5)
+    bot.send_message(message.chat.id, "Следующая команда")
+    are_you_ready(message)
+
+
 bot.polling(non_stop=True)
+
