@@ -67,17 +67,20 @@ def own_team_name(message):
         greeting(message)
 
 
+turn = 2
+
 
 def are_you_ready(message):
+    global turn
+    if turn == 2:
+        turn = 1
+    else:
+        turn = 2
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     start = types.InlineKeyboardButton('Готов')
     markup.add(start)
-    msg = bot.send_message(message.chat.id, f"Команда готова?", reply_markup=markup, parse_mode='html') # Create another def for print this phrace func
+    msg = bot.send_message(message.chat.id, f"Команда {turn} готова?", reply_markup=markup, parse_mode='html')
     bot.register_next_step_handler(msg, timer)
-
-
-
-
 
 
 def show_word(message):
@@ -103,7 +106,7 @@ def again(message):
 def timer(message):
     show_word(message)
     time.sleep(5)
-    bot.send_message(message.chat.id, "Следующая команда")
+    bot.send_message(message.chat.id, "<b>Ход переходит следующей команде</b>", parse_mode='html')
     are_you_ready(message)
 
 
