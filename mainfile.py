@@ -23,7 +23,7 @@ def give_name(message):
 def greeting(message):
     global team_number
     if team_number <= 2:
-        markup_request = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup_request = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         markup_request.add(types.InlineKeyboardButton('Своё название'), types.InlineKeyboardButton('Случайное название'))
         msg = bot.send_message(message.chat.id, f'{team_number}-ая выбери вариант названия', reply_markup=markup_request)
         bot.register_next_step_handler(msg, choose_name_way)
@@ -76,7 +76,7 @@ def are_you_ready(message):
         turn = 1
     else:
         turn = 2
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True,  one_time_keyboard=True)
     start = types.InlineKeyboardButton('Готов')
     markup.add(start)
     msg = bot.send_message(message.chat.id, f"Команда {turn} готова?", reply_markup=markup, parse_mode='html')
@@ -88,14 +88,14 @@ def show_word(message):
             content = file.read()
             splited = content.split(", ")
             word = random.choice(splited)
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(types.InlineKeyboardButton('+'), types.InlineKeyboardButton('-'))
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    markup.add(types.InlineKeyboardButton(text='+', callback_data='plus'), types.InlineKeyboardButton(text='-', callback_data='minus'))
     msg = bot.send_message(message.chat.id, f'<b>{word}</b>', reply_markup=markup, parse_mode='html')
     bot.register_next_step_handler(msg, again)
 
 
 def again(message):
-    if message.text == '+':
+    if message.text == '':
         bot.send_message(message.chat.id, '+1 балл')
         show_word(message)
     elif message.text == '-':
