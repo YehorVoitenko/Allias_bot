@@ -33,7 +33,7 @@ def greeting(message):
 
 def choose_name_way(message):
     global team_number
-    if message.text == 'Своё названиеe':
+    if message.text == 'Своё названиеeeeeeee':
         msg = bot.send_message(message.chat.id, "Введите название")
         bot.register_next_step_handler(msg, own_team_name)
     elif message.text == 'Случайное название':
