@@ -6,16 +6,16 @@ from telebot import types
 
 bot = telebot.TeleBot("5455678554:AAEqS1e20yR09YkRSC5GDtxvwFD37Gjd0_8")
 team_number = 1
-first_team_name = 'team name'
-second_team_name = 'team name'
+first_team_name = None
+second_team_name = None
 
 
-"""@bot.message_handler(commands=['teaminfo'])
+@bot.message_handler(commands=['teaminfo'])
 def give_name(message):
     global first_team_name
     global second_team_name
     bot.send_message(message.chat.id, f'<b>First team name: {first_team_name}</b>\n'
-                                      f'<b>Second team name: {second_team_name}</b>', parse_mode='html')"""
+                                      f'<b>Second team name: {second_team_name}</b>', parse_mode='html')
 
 
 @bot.message_handler(commands=['start'])
@@ -32,16 +32,23 @@ def greeting(message):
 
 def choose_name_way(message):
     global team_number
+    global first_team_name
+    global second_team_name
     if message.text == 'Своё название':
         msg = bot.send_message(message.chat.id, "Введите название")
         bot.register_next_step_handler(msg, own_team_name)
     elif message.text == 'Случайное название':
         name = random_name()
         bot.send_message(message.chat.id, f"Название {team_number}-ой команды: <b><u>{name}</u></b>\n",
-                               parse_mode='html')
+                                          parse_mode='html')
+        if team_number == 1:
+            first_team_name = name
+        if team_number == 2:
+            second_team_name = name
         if team_number <= 2:
             team_number += 1
             greeting(message)
+
 
 
 def random_name():
@@ -58,9 +65,15 @@ def random_name():
 
 
 def own_team_name(message):
+    global first_team_name
+    global second_team_name
     global team_number
     bot.send_message(message.chat.id, f"Название {team_number}-ой команды: <b><u>{message.text}</u></b>",
                      parse_mode='html')
+    if team_number == 1:
+        first_team_name = message.text
+    if team_number == 2:
+        second_team_name = message.text
     if team_number <= 2:
         team_number += 1
         greeting(message)
@@ -90,10 +103,10 @@ def show_word(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup.add(types.InlineKeyboardButton(text='+', callback_data='plus'), types.InlineKeyboardButton(text='-', callback_data='minus'))
     msg = bot.send_message(message.chat.id, f'<b>{word}</b>', reply_markup=markup, parse_mode='html')
-    bot.register_next_step_handler(msg, again)
+    bot.register_next_step_handler(msg, plus_or_minus)
 
 
-def again(message):
+def plus_or_minus(message):
     if message.text == '':
         bot.send_message(message.chat.id, '+1 балл')
         show_word(message)
