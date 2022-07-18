@@ -46,16 +46,16 @@ def choose_name_way(message):
 
 
 def random_name():
-    with open('first name.txt', 'r') as file:  # Instead of copying funcs - use class or another file; decorators
+    with open('static/nouns.txt', 'r') as file:  # Instead of copying funcs - use class or another file; decorators
         content = file.read()
-        splited = content.split(", ")
-        first_random = random.choice(splited)
+        splited = content.split("\n")
+        nouns = random.choice(splited)
 
-    with open('second name.txt', 'r') as file:  # Instead of second name.txt - use file with adjectives
+    with open('static/adjectives.txt', 'r') as file:  # Instead of adjectives.txt - use file with adjectives
         content = file.read()
-        splited = content.split(", ")
-        second_random = random.choice(splited)
-    return f'{first_random} {second_random}'
+        splited = content.split("\n")
+        adjectives = random.choice(splited)
+    return f'{adjectives} {nouns} '
 
 
 def own_team_name(message):
@@ -99,9 +99,9 @@ def are_you_ready(message):
 
 
 def show_word(message):
-    with open('words.txt', 'r') as file:  # Instead of copying funcs - use class or another file; decorators
+    with open('static/words.txt', 'r') as file:  # Instead of copying funcs - use class or another file; decorators
         content = file.read()
-        splited = content.split(", ")
+        splited = content.split("\n")
         word = random.choice(splited)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup.add(types.InlineKeyboardButton(text='+', callback_data='plus'),
