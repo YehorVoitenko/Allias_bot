@@ -1,13 +1,13 @@
 import random
 
 
-def output_random_name():
-    with open('static/nouns.txt', 'r') as file:  # Instead of copying funcs - use class or another file; decorators
+def create_random_name():
+    with open('static/team_name_words/nouns.txt', 'r') as file:
         content = file.read()
         splited = content.split("\n")
         nouns = random.choice(splited)
 
-    with open('static/adjectives.txt', 'r') as file:  # Instead of adjectives.txt - use file with adjectives
+    with open('static/team_name_words/adjectives.txt', 'r') as file:
         content = file.read()
         splited = content.split("\n")
         adjectives = random.choice(splited)
@@ -15,7 +15,7 @@ def output_random_name():
 
 
 def print_word():
-    with open('static/words.txt', 'r') as file:  # Instead of copying funcs - use class or another file; decorators
+    with open('static/game_words/words.txt', 'r') as file:
         content = file.read()
         splited = content.split("\n")
         word = random.choice(splited)

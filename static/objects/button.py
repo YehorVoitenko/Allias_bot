@@ -1,16 +1,16 @@
 from telebot import types
-from static.constants import phrases
+from static.constants import phrase
 
 
-def choose_name():
+def create_name_button():
     markup_request = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    markup_request.add(types.InlineKeyboardButton(phrases.own_name),
-                       types.InlineKeyboardButton(phrases.random_name))
+    markup_request.add(types.InlineKeyboardButton(phrase.own_name),
+                       types.InlineKeyboardButton(phrase.random_name))
     return markup_request
 
 
-def plus_minus():
+def answer_button():
     markup_request = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup_request.add(types.InlineKeyboardButton('+'),
-               types.InlineKeyboardButton('-'))
+                       types.InlineKeyboardButton('-'))
     return markup_request
