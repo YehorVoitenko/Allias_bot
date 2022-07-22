@@ -3,7 +3,6 @@ import telebot
 from telebot import types
 from object.button import button
 from object.phrase import phrase
-from show_error import show_error_type
 from settings.config import config
 from show_error.show_error_type import error102
 from static.variable import variable
