@@ -1,95 +1,118 @@
-from settings import config
 import time
 import telebot
 from telebot import types
-from modules.calculations import assign_teams_names, add_point
-from static.constants import variable, phrase
-from modules.file_util import create_random_name, print_word
-from static.objects import button
-from modules.notification import declare_winner
+from object.button import button
+from object.phrase import phrase
+from show_error import show_error_type
+from settings.config import config
+from static.variable import variable
+from services.check_value import check_team_turn
+from services.get_word_from_flie import get_random_name, give_word_for_round
+from services.message_to_user.message_to_user import pick_winner, show_teams_points
 
 bot = telebot.TeleBot(config.TOKEN)
 
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    if variable.team_number <= 2:
+    if variable.team_turn_number <= variable.total_teams_quantity:
         markup_request = button.create_name_button()
-        msg = bot.send_message(message.chat.id, f'{variable.team_number}-ая выбери вариант названия',
+        msg = bot.send_message(message.chat.id, f'{variable.team_turn_number}-ая выбери вариант названия',
                                reply_markup=markup_request)
         bot.register_next_step_handler(msg, create_team_name)
-    if variable.team_number == 3:
-        change_turn(message)
+    if variable.team_turn_number == variable.total_teams_quantity + 1:
+        change_team_turn(message)
 
 
 def create_team_name(message):
-    if message.text == 'Своё название':
-        msg = bot.send_message(message.chat.id, "Введите название")
+    if message.text == phrase.custom_name:
+        msg = bot.send_message(message.chat.id, phrase.write_custom_team_name)
         bot.register_next_step_handler(msg, custom_team_name)
-    elif message.text == 'Случайное название':
-        name = create_random_name()
-        bot.send_message(message.chat.id, f"{phrase.x_team_name}: "
-                                          f"<b><u>{create_random_name()}</u></b>\n", parse_mode='html')
-        assign_teams_names(name)
+    elif message.text == phrase.random_name:
+        name = get_random_name()
+        bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
+                                          f"<b><u>{name}</u></b>\n", parse_mode='html')
+        give_team_name_by_turn_number(message, name)
+    else:
+        bot.send_message(message.chat.id, error102)
+        start(message)
+
+
+def give_team_name_by_turn_number(message, team_name_by_creation_name_type):
+    if variable.team_turn_number == variable.total_teams_quantity - 1:
+        variable.first_team_name = team_name_by_creation_name_type
+    else:
+        variable.second_team_name = team_name_by_creation_name_type
+    if variable.team_turn_number <= variable.total_teams_quantity:
+        variable.team_turn_number += 1
         start(message)
 
 
 def custom_team_name(message):
-    bot.send_message(message.chat.id, f"{phrase.x_team_name}: <b><u>{message.text}</u></b>",
-                     parse_mode='html')
-    assign_teams_names(message.text)
-    start(message)
+    bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
+                                      f"<b><u>{message.text}</u></b>", parse_mode='html')
+    give_team_name_by_turn_number(message, message.text)
 
 
-def change_turn(message):
-    if variable.turn == variable.second_team_name:
-        variable.turn = variable.first_team_name
+def change_team_turn(message):
+    markup_request = button.get_ready_button()
+    if variable.current_round != variable.total_round_number + 1:
+        current_team_turn = check_team_turn()
+        variable.team_turn_number += 1
+        msg = bot.send_message(message.chat.id, f"Команда <b><u>{current_team_turn}</u></b> готова?",
+                               reply_markup=markup_request, parse_mode='html')
+        bot.register_next_step_handler(msg, get_round_time)
     else:
-        variable.turn = variable.second_team_name
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    ready = types.InlineKeyboardButton('Готов')
-    markup.add(ready)
-    if variable.first_team_points != 0 or variable.second_team_points != 0:
-        show_points(message)
-    if variable.rounds == 2:
         finish_game(message)
+
+
+def get_round_time(message):  # TODO SEPARATE TO ANOTHER FUNCS
+    if message.text == 'Готов':
+        show_word(message)
+        time.sleep(variable.round_time_value)
+        show_teams_points(message)
+        bot.send_message(message.chat.id, phrase.pass_next_team_turn, parse_mode='html')
+        variable.current_round += 1
+        change_team_turn(message)
     else:
-        msg = bot.send_message(message.chat.id, f"Команда <b><u>{variable.turn}</u></b> готова?", reply_markup=markup,
-                               parse_mode='html')
-        bot.register_next_step_handler(msg, turn_time)
-        variable.rounds += 1
+        markup_request = button.get_ready_button()
+        bot.send_message(message.chat.id, error103)
+        msg = bot.send_message(message.chat.id, 'Нажми кнопку \'Готов\'',
+                               reply_markup=markup_request, parse_mode='html')
+        bot.register_next_step_handler(msg, get_round_time)
 
 
 def show_word(message):
-    markup_request = button.answer_button()
-    msg = bot.send_message(message.chat.id, f'<b>{print_word()}</b>', reply_markup=markup_request, parse_mode='html')
-    bot.register_next_step_handler(msg, check_respond)
+    word = give_word_for_round()
+    markup_request = button.add_point_button()
+    msg = bot.send_message(message.chat.id, f'<b>{word}</b>', reply_markup=markup_request, parse_mode='html')
+    bot.register_next_step_handler(msg, add_point)
 
 
-def check_respond(message):
-    add_point(message.text)
-    show_word(message)
-
-
-def turn_time(message):
-    show_word(message)
-    time.sleep(5)
-    bot.send_message(message.chat.id, f"<b>{phrase.next_turn}</b>", parse_mode='html')
-    change_turn(message)
-
-
-def show_points(message):
-    bot.send_message(message.chat.id, f"<b>{phrase.team_points} {variable.first_team_name}: "
-                                      f"{variable.first_team_points}</b>\n<b>"
-                                      f"{phrase.team_points} {variable.second_team_name}: "
-                                      f"{variable.second_team_points}</b>",
-                     parse_mode='html')
+def add_point(message):
+    if message.text == '+':
+        if variable.current_round % 2 == 1:
+            variable.first_team_points += 1
+        else:
+            variable.second_team_points += 1
+        show_word(message)
+    if message.text == '-':
+        if variable.current_round % 2 == 1:
+            variable.first_team_points -= 1
+        else:
+            variable.second_team_points -= 1
+        show_word(message)
+    if message.text != '+' and message.text != '-' and message.text != 'Готов':
+        markup_request = button.add_point_button()
+        bot.send_message(message.chat.id, error101, reply_markup=markup_request)
+        show_word(message)
 
 
 def finish_game(message):
-    markup = types.ReplyKeyboardRemove()
-    bot.send_message(message.chat.id, f"{phrase.thanks}\n"
-                                      f"{declare_winner()}", reply_markup=markup, parse_mode='html')
+    markup_request = types.ReplyKeyboardRemove()
+    winner_team = pick_winner()
+    bot.send_message(message.chat.id, f"{phrase.get_winner_team_name}: <b><u>{winner_team}</u></b>",
+                     parse_mode='html', reply_markup=markup_request)
 
 
 bot.polling(non_stop=True)
