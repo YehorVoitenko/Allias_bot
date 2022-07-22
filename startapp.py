@@ -5,6 +5,7 @@ from object.button import button
 from object.phrase import phrase
 from show_error import show_error_type
 from settings.config import config
+from show_error.show_error_type import error102
 from static.variable import variable
 from services.check_value import check_team_turn
 from services.get_word_from_flie import get_random_name, give_word_for_round
