@@ -1,15 +1,14 @@
 import time
 import telebot
 from telebot import types
-from object.button import button
-from object.phrase import phrase
-from settings.config import config
-from show_error.show_error_type import error102
-from static.variable import variable
-from services.check_value import check_team_turn
-from services.get_word_from_flie import get_random_name, give_word_for_round
-from services.message_to_user.message_to_user import pick_winner, show_teams_points
+from object import button
+from constants import config, variable
+from utils.file_utils import get_translation
+from calculation.check_value import check_team_turn
+from utils.file_utils import get_random_name, give_word_for_round
+from services.notificate_user import pick_winner, show_teams_points
 
+bot_phrase = get_translation()
 bot = telebot.TeleBot(config.TOKEN)
 
 
@@ -25,16 +24,16 @@ def start(message):
 
 
 def create_team_name(message):
-    if message.text == phrase.custom_name:
-        msg = bot.send_message(message.chat.id, phrase.write_custom_team_name)
+    if message.text == bot_phrase.custom_name:
+        msg = bot.send_message(message.chat.id, bot_phrase.write_custom_team_name)
         bot.register_next_step_handler(msg, custom_team_name)
-    elif message.text == phrase.random_name:
+    elif message.text == bot_phrase.random_name:
         name = get_random_name()
         bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
                                           f"<b><u>{name}</u></b>\n", parse_mode='html')
         give_team_name_by_turn_number(message, name)
     else:
-        bot.send_message(message.chat.id, error102)
+        bot.send_message(message.chat.id, bot_phrase.error102)
         start(message)
 
 
@@ -66,18 +65,18 @@ def change_team_turn(message):
         finish_game(message)
 
 
-def get_round_time(message):  # TODO SEPARATE TO ANOTHER FUNCS
-    if message.text == 'Готов':
+def get_round_time(message):
+    if message.text == bot_phrase.ready:
         show_word(message)
         time.sleep(variable.round_time_value)
         show_teams_points(message)
-        bot.send_message(message.chat.id, phrase.pass_next_team_turn, parse_mode='html')
+        bot.send_message(message.chat.id, bot_phrase.pass_next_team_turn, parse_mode='html')
         variable.current_round += 1
         change_team_turn(message)
     else:
         markup_request = button.get_ready_button()
-        bot.send_message(message.chat.id, error103)
-        msg = bot.send_message(message.chat.id, 'Нажми кнопку \'Готов\'',
+        bot.send_message(message.chat.id, bot_phrase.error103)
+        msg = bot.send_message(message.chat.id, bot_phrase.button_ready,
                                reply_markup=markup_request, parse_mode='html')
         bot.register_next_step_handler(msg, get_round_time)
 
@@ -90,28 +89,28 @@ def show_word(message):
 
 
 def add_point(message):
-    if message.text == '+':
+    if message.text == bot_phrase.plus:
         if variable.current_round % 2 == 1:
             variable.first_team_points += 1
         else:
             variable.second_team_points += 1
         show_word(message)
-    if message.text == '-':
+    if message.text == bot_phrase.minus:
         if variable.current_round % 2 == 1:
             variable.first_team_points -= 1
         else:
             variable.second_team_points -= 1
         show_word(message)
-    if message.text != '+' and message.text != '-' and message.text != 'Готов':
+    if message.text != bot_phrase.plus and message.text != bot_phrase.minus and message.text != bot_phrase.ready:
         markup_request = button.add_point_button()
-        bot.send_message(message.chat.id, error101, reply_markup=markup_request)
+        bot.send_message(message.chat.id, bot_phrase.error101, reply_markup=markup_request)
         show_word(message)
 
 
 def finish_game(message):
     markup_request = types.ReplyKeyboardRemove()
     winner_team = pick_winner()
-    bot.send_message(message.chat.id, f"{phrase.get_winner_team_name}: <b><u>{winner_team}</u></b>",
+    bot.send_message(message.chat.id, f"{bot_phrase.get_winner_team_name}: <b><u>{winner_team}</u></b>",
                      parse_mode='html', reply_markup=markup_request)
 
 
