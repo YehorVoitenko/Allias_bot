@@ -60,12 +60,12 @@ def change_team_turn(message):
         variable.team_turn_number += 1
         msg = bot.send_message(message.chat.id, f"Командa <b><u>{current_team_turn}</u></b> готова?",
                                reply_markup=markup_request, parse_mode='html')
-        bot.register_next_step_handler(msg, get_round_time)
+        bot.register_next_step_handler(msg, round_process)
     else:
         finish_game(message)
 
 
-def get_round_time(message):
+def round_process(message):
     if message.text == bot_phrase.ready:
         show_word(message)
         time.sleep(variable.round_time_value)
@@ -78,7 +78,7 @@ def get_round_time(message):
         bot.send_message(message.chat.id, bot_phrase.error103)
         msg = bot.send_message(message.chat.id, bot_phrase.button_ready,
                                reply_markup=markup_request, parse_mode='html')
-        bot.register_next_step_handler(msg, get_round_time)
+        bot.register_next_step_handler(msg, round_process)
 
 
 def show_word(message):
