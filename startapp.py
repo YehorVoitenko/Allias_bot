@@ -1,6 +1,11 @@
 import time
 import telebot
 from telebot import types
+
+from repositories.base import engine, Base
+from repositories.inserts import save_team
+from repositories.retreives import get_teams
+from utils.db_utils.teams import Team
 from object import button
 from constants import config, variable
 from utils.file_utils import get_translation
@@ -10,6 +15,10 @@ from services.notificate_user import pick_winner, show_teams_points
 
 bot_phrase = get_translation()
 bot = telebot.TeleBot(config.TOKEN)
+translation = get_translation()
+
+Base.metadata.create_all(engine)
+team = Team()
 
 
 @bot.message_handler(commands=['start'])
@@ -48,8 +57,12 @@ def give_team_name_by_turn_number(message, team_name_by_creation_name_type):
 
 
 def custom_team_name(message):
+    save_team(name=message.text)
+    teams = get_teams()
+    team = teams.pop()
+    current_team = team
     bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
-                                      f"<b><u>{message.text}</u></b>", parse_mode='html')
+                                      f"<b><u>{current_team.name}</u></b>", parse_mode='html')
     give_team_name_by_turn_number(message, message.text)
 
 
@@ -58,14 +71,14 @@ def change_team_turn(message):
     if variable.current_round != variable.total_round_number + 1:
         current_team_turn = check_team_turn()
         variable.team_turn_number += 1
-        msg = bot.send_message(message.chat.id, f"Командa <b><u>{current_team_turn}</u></b> готова?",
+        msg = bot.send_message(message.chat.id, f"Команда <b><u>{current_team_turn}</u></b> готова?",
                                reply_markup=markup_request, parse_mode='html')
-        bot.register_next_step_handler(msg, round_process)
+        bot.register_next_step_handler(msg, get_round_time)
     else:
         finish_game(message)
 
 
-def round_process(message):
+def get_round_time(message):
     if message.text == bot_phrase.ready:
         show_word(message)
         time.sleep(variable.round_time_value)
@@ -78,7 +91,7 @@ def round_process(message):
         bot.send_message(message.chat.id, bot_phrase.error103)
         msg = bot.send_message(message.chat.id, bot_phrase.button_ready,
                                reply_markup=markup_request, parse_mode='html')
-        bot.register_next_step_handler(msg, round_process)
+        bot.register_next_step_handler(msg, get_round_time)
 
 
 def show_word(message):
