@@ -58,7 +58,7 @@ def change_team_turn(message):
     if variable.current_round != variable.total_round_number + 1:
         current_team_turn = check_team_turn()
         variable.team_turn_number += 1
-        msg = bot.send_message(message.chat.id, f"Команда <b><u>{current_team_turn}</u></b> готова?",
+        msg = bot.send_message(message.chat.id, f"Командa <b><u>{current_team_turn}</u></b> готова?",
                                reply_markup=markup_request, parse_mode='html')
         bot.register_next_step_handler(msg, get_round_time)
     else:
