@@ -37,13 +37,29 @@ def create_team_name(message):
         msg = bot.send_message(message.chat.id, bot_phrase.write_custom_team_name)
         bot.register_next_step_handler(msg, custom_team_name)
     elif message.text == bot_phrase.random_name:
-        name = get_random_name()
-        bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
-                                          f"<b><u>{name}</u></b>\n", parse_mode='html')
-        give_team_name_by_turn_number(message, name)
+        save_random_team_name(message)
     else:
         bot.send_message(message.chat.id, bot_phrase.error102)
         start(message)
+
+
+def save_random_team_name(message):
+    name = get_random_name()
+    save_team(name=name)
+    teams = get_teams()
+    current_team = teams.pop()
+    bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
+                                      f"<b><u>{current_team.name}</u></b>\n", parse_mode='html')
+    give_team_name_by_turn_number(message, name)
+
+
+def custom_team_name(message):
+    save_team(name=message.text)
+    teams = get_teams()
+    current_team = teams.pop()
+    bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
+                                      f"<b><u>{current_team.name}</u></b>", parse_mode='html')
+    give_team_name_by_turn_number(message, message.text)
 
 
 def give_team_name_by_turn_number(message, team_name_by_creation_name_type):
@@ -54,16 +70,6 @@ def give_team_name_by_turn_number(message, team_name_by_creation_name_type):
     if variable.team_turn_number <= variable.total_teams_quantity:
         variable.team_turn_number += 1
         start(message)
-
-
-def custom_team_name(message):
-    save_team(name=message.text)
-    teams = get_teams()
-    team = teams.pop()
-    current_team = team
-    bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
-                                      f"<b><u>{current_team.name}</u></b>", parse_mode='html')
-    give_team_name_by_turn_number(message, message.text)
 
 
 def change_team_turn(message):
