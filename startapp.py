@@ -3,9 +3,9 @@ import telebot
 from telebot import types
 
 from repositories.base import engine, Base
-from repositories.inserts import save_team
-from repositories.retreives import get_teams
-from utils.db_utils.teams import Team
+from repositories.inserts import add_first_team_info, add_second_team_info
+from repositories.retreives import get_first_team, get_second_team
+from utils.db_utils.teams import FirstTeam, SecondTeam
 from object import button
 from constants import config, variable
 from utils.file_utils import get_translation
@@ -18,14 +18,15 @@ bot = telebot.TeleBot(config.TOKEN)
 translation = get_translation()
 
 Base.metadata.create_all(engine)
-team = Team()
+first_team = FirstTeam()
+second_team = SecondTeam()
 
 
 @bot.message_handler(commands=['start'])
 def start(message):
     if variable.team_turn_number <= variable.total_teams_quantity:
         markup_request = button.create_name_button()
-        msg = bot.send_message(message.chat.id, f'{variable.team_turn_number}-ая выбери вариант названия',
+        msg = bot.send_message(message.chat.id, f'{variable.team_turn_number}-ая команда выбери вариант названия',
                                reply_markup=markup_request)
         bot.register_next_step_handler(msg, create_team_name)
     if variable.team_turn_number == variable.total_teams_quantity + 1:
@@ -35,7 +36,7 @@ def start(message):
 def create_team_name(message):
     if message.text == bot_phrase.custom_name:
         msg = bot.send_message(message.chat.id, bot_phrase.write_custom_team_name)
-        bot.register_next_step_handler(msg, custom_team_name)
+        bot.register_next_step_handler(msg, save_custom_team_name)
     elif message.text == bot_phrase.random_name:
         save_random_team_name(message)
     else:
@@ -44,32 +45,31 @@ def create_team_name(message):
 
 
 def save_random_team_name(message):
-    name = get_random_name()
-    save_team(name=name)
-    teams = get_teams()
-    current_team = teams.pop()
+    random_name = get_random_name()
+    name = give_team_name_by_turn_number(random_name)
     bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
-                                      f"<b><u>{current_team.name}</u></b>\n", parse_mode='html')
-    give_team_name_by_turn_number(message, name)
+                                      f"<b><u>{name}</u></b>\n", parse_mode='html')
+    variable.team_turn_number += 1
+    start(message)
 
 
-def custom_team_name(message):
-    save_team(name=message.text)
-    teams = get_teams()
-    current_team = teams.pop()
+def save_custom_team_name(message):
+    name = give_team_name_by_turn_number(message.text)
     bot.send_message(message.chat.id, f"Название {variable.team_turn_number}-ой команды: "
-                                      f"<b><u>{current_team.name}</u></b>", parse_mode='html')
-    give_team_name_by_turn_number(message, message.text)
+                                      f"<b><u>{name}</u></b>", parse_mode='html')
+    variable.team_turn_number += 1
+    start(message)
 
 
-def give_team_name_by_turn_number(message, team_name_by_creation_name_type):
-    if variable.team_turn_number == variable.total_teams_quantity - 1:
-        variable.first_team_name = team_name_by_creation_name_type
+def give_team_name_by_turn_number(team_name_by_creation_name_type):
+    if variable.team_turn_number == 1:
+        add_first_team_info(team_name_by_creation_name_type)
+        teams = get_first_team()
+        return teams.pop().name
     else:
-        variable.second_team_name = team_name_by_creation_name_type
-    if variable.team_turn_number <= variable.total_teams_quantity:
-        variable.team_turn_number += 1
-        start(message)
+        add_second_team_info(team_name_by_creation_name_type)
+        teams = get_second_team()
+        return teams.pop().name
 
 
 def change_team_turn(message):
@@ -85,6 +85,8 @@ def change_team_turn(message):
 
 
 def get_round_time(message):
+    first_team_name = get_first_team()
+    second_team_name = get_second_team()
     if message.text == bot_phrase.ready:
         show_word(message)
         time.sleep(variable.round_time_value)
